@@ -6,6 +6,7 @@ __pycache__/
 *.pth
 tmp.*
 */.ipynb_checkpoints/*
+.idea
 
 logs/
 weights/
@@ -25,3 +26,5 @@ tools/draw_QccDayNights.py
 scripts/slurm/
 scripts/sbatch_submit.sh
 src/utils/client.py
+
+assets/scannet_test_1500/*
