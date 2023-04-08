@@ -59,6 +59,16 @@ class FineMatching(nn.Module):
         # compute absolute kpt coords
         self.get_fine_match(coords_normalized, data)
 
+        # print("Coarse \t|\tFine")
+        # for i in range(data['mkpts0_f'].size(0)):
+        #     print(f"{data['mkpts1_c'][i]}\t|\t{data['mkpts1_f'][i]}")
+        # exit()
+
+
+
+
+        return feat_f0_picked,
+
     @torch.no_grad()
     def get_fine_match(self, coords_normed, data):
         W, WW, C, scale = self.W, self.WW, self.C, self.scale

@@ -36,11 +36,20 @@ class LoFTR(nn.Module):
                 'mask1'(optional) : (torch.Tensor): (N, H, W)
             }
         """
+
+        # print(data['image0'].size())
+        # print(data['image1'].size())
+        # exit()
+
         # 1. Local Feature CNN
         data.update({
             'bs': data['image0'].size(0),
             'hw0_i': data['image0'].shape[2:], 'hw1_i': data['image1'].shape[2:]
         })
+
+        # for key, value in data.items():
+        #     print(f"Key: {key}, value: {value}")
+        # exit()
 
         if data['hw0_i'] == data['hw1_i']:  # faster & better BN convergence
             feats_c, feats_f = self.backbone(torch.cat([data['image0'], data['image1']], dim=0))
@@ -53,6 +62,14 @@ class LoFTR(nn.Module):
             'hw0_f': feat_f0.shape[2:], 'hw1_f': feat_f1.shape[2:]
         })
 
+        # for key, value in data.items():
+        #     print(f"Key: {key}, value: {value}")
+        #
+        # print(feat_f0.size())
+        # print(feat_f1.size())
+        #
+        # exit()
+
         # 2. coarse-level loftr module
         # add featmap with positional encoding, then flatten it to sequence [N, HW, C]
         feat_c0 = rearrange(self.pos_encoding(feat_c0), 'n c h w -> n (h w) c')
@@ -63,8 +80,16 @@ class LoFTR(nn.Module):
             mask_c0, mask_c1 = data['mask0'].flatten(-2), data['mask1'].flatten(-2)
         feat_c0, feat_c1 = self.loftr_coarse(feat_c0, feat_c1, mask_c0, mask_c1)
 
+        # print(feat_c0.size())
+        # print(feat_c1.size())
+        #
+        # exit()
+
         # 3. match coarse-level
         self.coarse_matching(feat_c0, feat_c1, data, mask_c0=mask_c0, mask_c1=mask_c1)
+
+        feat_c0_matches = feat_c0.squeeze()[data['coarse_i_ids'], :].cpu().numpy()
+        feat_c1_matches = feat_c1.squeeze()[data['coarse_j_ids'], :].cpu().numpy()
 
         # 4. fine-level refinement
         feat_f0_unfold, feat_f1_unfold = self.fine_preprocess(feat_f0, feat_f1, feat_c0, feat_c1, data)
