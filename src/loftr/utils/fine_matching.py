@@ -64,10 +64,9 @@ class FineMatching(nn.Module):
         #     print(f"{data['mkpts1_c'][i]}\t|\t{data['mkpts1_f'][i]}")
         # exit()
 
+        feat_f1_fine = feat_f1[:, WW//2, :]
 
-
-
-        return feat_f0_picked,
+        return feat_f0_picked, feat_f1_fine
 
     @torch.no_grad()
     def get_fine_match(self, coords_normed, data):

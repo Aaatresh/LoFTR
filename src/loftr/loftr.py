@@ -88,8 +88,8 @@ class LoFTR(nn.Module):
         # 3. match coarse-level
         self.coarse_matching(feat_c0, feat_c1, data, mask_c0=mask_c0, mask_c1=mask_c1)
 
-        feat_c0_matches = feat_c0.squeeze()[data['coarse_i_ids'], :].cpu().numpy()
-        feat_c1_matches = feat_c1.squeeze()[data['coarse_j_ids'], :].cpu().numpy()
+        feat_c0_matches = feat_c0.squeeze()[data['coarse_i_ids'], :]
+        feat_c1_matches = feat_c1.squeeze()[data['coarse_j_ids'], :]
 
         # 4. fine-level refinement
         feat_f0_unfold, feat_f1_unfold = self.fine_preprocess(feat_f0, feat_f1, feat_c0, feat_c1, data)
@@ -97,7 +97,12 @@ class LoFTR(nn.Module):
             feat_f0_unfold, feat_f1_unfold = self.loftr_fine(feat_f0_unfold, feat_f1_unfold)
 
         # 5. match fine-level
-        self.fine_matching(feat_f0_unfold, feat_f1_unfold, data)
+        feat_f0_matches, feat_f1_matches = self.fine_matching(feat_f0_unfold, feat_f1_unfold, data)
+
+        data.update({
+            'feat_0_matches': torch.cat([feat_c0_matches, feat_f0_matches], -1),
+            'feat_1_matches': torch.cat([feat_c1_matches, feat_f1_matches], -1),
+        })
 
     def load_state_dict(self, state_dict, *args, **kwargs):
         for k in list(state_dict.keys()):

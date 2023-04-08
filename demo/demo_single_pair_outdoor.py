@@ -67,7 +67,6 @@ batch = {'image0': img0, 'image1': img1}
 # Inference with LoFTR and get prediction
 with torch.no_grad():
     matcher(batch)
-    # print(batch.keys())
     mkpts0 = batch['mkpts0_f'].cpu().numpy()
     mkpts1 = batch['mkpts1_f'].cpu().numpy()
     mconf = batch['mconf'].cpu().numpy()
