@@ -10,7 +10,7 @@ from .utils.fine_matching import FineMatching
 
 
 class LoFTR(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, apply_mask):
         super().__init__()
         # Misc
         self.config = config
@@ -26,6 +26,8 @@ class LoFTR(nn.Module):
         self.loftr_fine = LocalFeatureTransformer(config["fine"])
         self.fine_matching = FineMatching()
 
+        self.apply_mask = apply_mask
+
     def forward(self, data):
         """ 
         Update:
@@ -37,19 +39,11 @@ class LoFTR(nn.Module):
             }
         """
 
-        # print(data['image0'].size())
-        # print(data['image1'].size())
-        # exit()
-
         # 1. Local Feature CNN
         data.update({
             'bs': data['image0'].size(0),
             'hw0_i': data['image0'].shape[2:], 'hw1_i': data['image1'].shape[2:]
         })
-
-        # for key, value in data.items():
-        #     print(f"Key: {key}, value: {value}")
-        # exit()
 
         if data['hw0_i'] == data['hw1_i']:  # faster & better BN convergence
             feats_c, feats_f = self.backbone(torch.cat([data['image0'], data['image1']], dim=0))
@@ -62,14 +56,6 @@ class LoFTR(nn.Module):
             'hw0_f': feat_f0.shape[2:], 'hw1_f': feat_f1.shape[2:]
         })
 
-        # for key, value in data.items():
-        #     print(f"Key: {key}, value: {value}")
-        #
-        # print(feat_f0.size())
-        # print(feat_f1.size())
-        #
-        # exit()
-
         # 2. coarse-level loftr module
         # add featmap with positional encoding, then flatten it to sequence [N, HW, C]
         feat_c0 = rearrange(self.pos_encoding(feat_c0), 'n c h w -> n (h w) c')
@@ -80,13 +66,17 @@ class LoFTR(nn.Module):
             mask_c0, mask_c1 = data['mask0'].flatten(-2), data['mask1'].flatten(-2)
         feat_c0, feat_c1 = self.loftr_coarse(feat_c0, feat_c1, mask_c0, mask_c1)
 
-        # print(feat_c0.size())
-        # print(feat_c1.size())
-        #
-        # exit()
-
         # 3. match coarse-level
         self.coarse_matching(feat_c0, feat_c1, data, mask_c0=mask_c0, mask_c1=mask_c1)
+
+        # import pickle
+        #
+        # with open('saved_data.pkl', 'wb') as f:
+        #     pickle.dump(data, f)
+
+        # self.apply_mask(data, method="random")
+        #
+        # exit()
 
         feat_c0_matches = feat_c0.squeeze()[data['coarse_i_ids'], :]
         feat_c1_matches = feat_c1.squeeze()[data['coarse_j_ids'], :]

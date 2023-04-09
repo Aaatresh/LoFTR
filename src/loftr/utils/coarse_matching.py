@@ -249,14 +249,6 @@ class CoarseMatching(nn.Module):
             [j_ids % data['hw1_c'][1], j_ids // data['hw1_c'][1]],
             dim=1) * scale1
 
-        # print(f"mkpts0_c: {mkpts0_c}")
-        # print(f"i_ids.size(): {i_ids.size()}")
-        # print(f"j_ids.size(): {j_ids.size()}")
-        # print(f"mkpts0_c.size(): {mkpts0_c.size()}")
-        # print(f"mkpts0_c[mconf != 0].size(): {mkpts0_c[mconf!=0].size()}")
-        # print(f"mkpts1_c.size(): {mkpts1_c.size()}")
-        # exit()
-
         # These matches is the current prediction (for visualization)
         coarse_matches.update({
             'gt_mask': mconf == 0,
