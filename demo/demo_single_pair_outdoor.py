@@ -9,7 +9,8 @@
 
 # In[15]:
 
-
+import sys
+sys.path.append("/home/aaa/aatresh/umich/sem4/eecs568/final_project/LoFTR")
 import os
 # os.chdir("..")
 from copy import deepcopy
@@ -28,6 +29,7 @@ from masking import build_mask, apply_mask
 # In[16]:
 
 
+
 from src.loftr import LoFTR, default_cfg
 
 # The default config uses dual-softmax.
@@ -40,8 +42,10 @@ matcher = matcher.eval()
 
 
 # Load example images
-img0_pth = "assets/phototourism_sample_images/st_pauls_cathedral_30776973_2635313996.jpg"
-img1_pth = "assets/phototourism_sample_images/st_pauls_cathedral_37347628_10902811376.jpg"
+# img0_pth = "assets/phototourism_sample_images/st_pauls_cathedral_30776973_2635313996.jpg"
+# img1_pth = "assets/phototourism_sample_images/st_pauls_cathedral_37347628_10902811376.jpg"
+img0_pth = "assets/loftr/images_left/frame0000.jpg"
+img1_pth = "assets/loftr/images_right/frame0000.jpg"
 img0_raw = cv2.imread(img0_pth, cv2.IMREAD_GRAYSCALE)
 img1_raw = cv2.imread(img1_pth, cv2.IMREAD_GRAYSCALE)
 img0_raw = cv2.resize(img0_raw, (img0_raw.shape[1]//8*8, img0_raw.shape[0]//8*8))  # input size shuold be divisible by 8
@@ -107,5 +111,6 @@ text = [
     'LoFTR',
     'Matches: {}'.format(len(mkpts0)),
 ]
+
 fig = make_matching_figure(img0_raw, img1_raw, mkpts0, mkpts1, color, text=text)
 show()
